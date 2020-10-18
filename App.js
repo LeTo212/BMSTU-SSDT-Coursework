@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { StyleSheet } from "react-native";
+import { StyleSheet, StatusBar } from "react-native";
 import "react-native-gesture-handler";
 import { NavigationContainer } from "@react-navigation/native";
 import { createMaterialBottomTabNavigator } from "@react-navigation/material-bottom-tabs";
@@ -34,7 +34,8 @@ const App = () => {
   }
 
   return (
-    <SafeAreaProvider>
+    <SafeAreaProvider style={styles.screen}>
+      <StatusBar translucent backgroundColor={Colors.secondary} />
       <NavigationContainer>
         <Tab.Navigator
           initialRoute="Home"
@@ -87,6 +88,10 @@ const App = () => {
   );
 };
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+  },
+});
 
 export default App;
