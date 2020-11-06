@@ -3,6 +3,7 @@ import { Text, StyleSheet, Dimensions, View } from "react-native";
 
 import Card from "../components/Card";
 import Genres from "../components/Genres";
+import { getVideoPath } from "../api";
 import MoviePlayer from "../components/MoviePlayer";
 
 const { width } = Dimensions.get("window");
@@ -38,7 +39,7 @@ const Movie = props => {
           Описание: {props.movieInfo.description}
         </Text>
       </Card>
-      <MoviePlayer uri={props.movieInfo.movieURI} />
+      <MoviePlayer uri={getVideoPath(props.movieInfo.key)} />
     </View>
   );
 };
