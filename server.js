@@ -22,7 +22,7 @@ connection.connect(function (error) {
   else console.log("Connected");
 });
 
-const server = app.listen(5555, function () {
+const server = app.listen(5556, "127.0.0.1", function () {
   //const host = server.address().address;
   const port = server.address().port;
   console.log("Listening on port " + port);
@@ -147,4 +147,31 @@ app.get("/image", function (req, res) {
       }
     );
   } else res.status(400).send("Invalid Type");
+});
+
+app.get("/types_genres", function (req, res) {
+  let info = {};
+
+  connection.query("select Name as 'Type' from Type;", function (
+    error,
+    rows,
+    fields
+  ) {
+    if (error) console.log(error);
+    else {
+      info.Types = Object.keys(rows).map(key => rows[key].Type);
+    }
+  });
+
+  connection.query("select Name as 'Genre' from Genre;", function (
+    error,
+    rows,
+    fields
+  ) {
+    if (error) console.log(error);
+    else {
+      info.Genres = Object.keys(rows).map(key => rows[key].Genre);
+    }
+    res.status(200).json(info);
+  });
 });

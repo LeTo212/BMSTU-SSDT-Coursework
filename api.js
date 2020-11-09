@@ -1,13 +1,24 @@
 import API_URL from "./constants/config";
 const getImagePath = (ID, Type) =>
-  `http://localhost:5555/image?MovieID=${ID}&Type=${Type}`;
+  `${API_URL}/image?MovieID=${ID}&Type=${Type}`;
 
 export const getVideoPath = (ID, Season, Episode) => {
   Season = Season ? `&Season=${Season}` : "";
   Episode = Episode ? `&Season=${Episode}` : "";
   return {
-    uri: `http://localhost:5555/video?MovieID=${ID + Season + Episode}`,
+    uri: `${API_URL}/video?MovieID=${ID + Season + Episode}`,
   };
+};
+
+export const getTypesAndGenres = async () => {
+  const results = await fetch(API_URL + "/types_genres").then(x => x.json());
+  const info = {
+    types: results.Types.map(item => (item = { label: item, value: item })),
+    genres: results.Genres.map(item => (item = { label: item, value: item })),
+  };
+  info.types.unshift({ label: "Любые", value: "", selected: true });
+  info.genres.unshift({ label: "Любые", value: "", selected: true });
+  return info;
 };
 
 export const getMovies = async () => {

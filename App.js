@@ -9,7 +9,8 @@ import * as Font from "expo-font";
 
 //Screens
 import Home from "./screens/Home";
-import Search from "./screens/Search";
+import SearchNav from "./navigation/SearchNav";
+//import Search from "./screens/Search";
 import Profile from "./screens/Profile";
 //
 
@@ -56,12 +57,12 @@ const App = () => {
           />
           <Tab.Screen
             name="Search"
-            component={Search}
+            component={SearchNav}
             options={{
               tabBarLabel: "",
               tabBarIcon: ({ color }) => (
                 <MaterialCommunityIcons
-                  name="camera-metering-spot"
+                  name="search-web"
                   color={color}
                   size={28}
                 />
