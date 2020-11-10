@@ -71,7 +71,6 @@ const styles = StyleSheet.create({
   video: {
     height: width * (9 / 16),
     width: width * (9 / 10),
-    marginVertical: "5%",
     overflow: "hidden",
     backgroundColor: "#000",
   },

@@ -35,10 +35,10 @@ app.get("/movies", function (req, res) {
   connection.query(
     "select m.MovieID, m.Title, t.Name as 'Type', group_concat(distinct g.Name separator ', ') as 'Genres', \
       group_concat(distinct Concat(d.Name,' ', Ifnull(d.MiddleName,' '), d.Surname) separator ', ') as 'Directors', \
-      m.Rating, m.Description, m.ReleaseDate \
-    from Movie m, Type t, Director_Movie d_m, Director d, Genre_Movie g_m, Genre g \
+      m.Rating, m.Description, m.ReleaseDate, max(v.Season) as 'Seasons', max(v.Episode) as 'Episodes' \
+    from Movie m, Type t, Director_Movie d_m, Director d, Genre_Movie g_m, Genre g, Video v \
     where m.TypeID = t.TypeID and d.DirectorID = d_m.DirectorID \
-      and m.MovieID = d_m.MovieID and g.GenreID = g_m.GenreID and m.MovieID = g_m.MovieID \
+      and m.MovieID = d_m.MovieID and g.GenreID = g_m.GenreID and m.MovieID = g_m.MovieID and v.MovieID = m.MovieID \
     group by m.MovieID;",
     function (error, rows, fields) {
       if (error) console.log(error);
@@ -47,7 +47,7 @@ app.get("/movies", function (req, res) {
           arr[index].Genres = arr[index].Genres.split(", ");
           arr[index].Directors = arr[index].Directors.split(", ");
         });
-        //console.log(rows);
+
         res.status(200).json(rows);
       }
     }
@@ -56,7 +56,8 @@ app.get("/movies", function (req, res) {
 
 app.get("/video", function (req, res) {
   const MovieID = req.query.MovieID;
-  if (MovieID) {
+
+  if (MovieID != "undefined" && MovieID != "") {
     const Season = req.query.Season
       ? " and v.Season = " + req.query.Season
       : "";

@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Text, StyleSheet, Dimensions, View } from "react-native";
+import RNPickerSelect from "react-native-picker-select";
 
 import Card from "../components/Card";
 import Genres from "../components/Genres";
@@ -8,38 +9,103 @@ import MoviePlayer from "../components/MoviePlayer";
 
 const { width } = Dimensions.get("window");
 const TEXTMARGINVERTICAL = "2%";
+const pickerStyle = {
+  inputIOS: {
+    color: "black",
+    width: 30,
+    height: 30,
+    textAlign: "center",
+    borderTopWidth: 1,
+    borderRightWidth: 1,
+    borderBottomWidth: 1,
+    borderLeftWidth: 1,
+    borderRadius: 3,
+    fontSize: 15,
+    fontWeight: "400",
+  },
+  inputAndroid: {
+    color: "black",
+    width: 80,
+    height: 30,
+    fontWeight: "400",
+  },
+};
 
-const Movie = props => {
+const Movie = ({ movieInfo }) => {
+  const [season, setSeason] = useState("1");
+  const [episode, setEpisode] = useState("1");
+
+  useEffect(() => {
+    setSeason(movieInfo.seasons ? season : null);
+    setEpisode(movieInfo.episodes ? episode : null);
+  });
+
+  const onChange = (curSeason, curEpisode) => {
+    setSeason(curSeason);
+    setEpisode(curEpisode);
+  };
+
   return (
     <View style={styles.movieContainer}>
       <Card style={styles.movieInfo}>
         <Text style={{ marginVertical: TEXTMARGINVERTICAL }}>
-          Тип: {props.movieInfo.type}
+          Тип: {movieInfo.type}
         </Text>
         <Text style={{ marginVertical: TEXTMARGINVERTICAL }}>
-          Рейтинг:{" "}
-          <Text style={{ color: "#ff6347" }}>{props.movieInfo.rating}</Text>
+          Рейтинг: <Text style={{ color: "#ff6347" }}>{movieInfo.rating}</Text>
         </Text>
         <View style={{ flexDirection: "row" }}>
           <Text style={{ marginVertical: TEXTMARGINVERTICAL }}>Жанры: </Text>
-          {props.movieInfo.genres ? (
-            <Genres genres={props.movieInfo.genres} />
-          ) : null}
+          {movieInfo.genres ? <Genres genres={movieInfo.genres} /> : null}
         </View>
         <Text style={{ marginVertical: TEXTMARGINVERTICAL }}>
-          Режисер:{" "}
-          {props.movieInfo.directors
-            ? props.movieInfo.directors.join(", ")
-            : null}
+          Режисер: {movieInfo.directors ? movieInfo.directors.join(", ") : null}
         </Text>
         <Text style={{ marginVertical: TEXTMARGINVERTICAL }}>
-          Выпуск: {props.movieInfo.releaseDate}
+          Выпуск: {movieInfo.releaseDate}
         </Text>
         <Text style={{ marginVertical: TEXTMARGINVERTICAL }}>
-          Описание: {props.movieInfo.description}
+          Описание: {movieInfo.description}
         </Text>
       </Card>
-      <MoviePlayer uri={getVideoPath(props.movieInfo.key)} />
+      {movieInfo.key ? (
+        <Card style={styles.videoPlayerContainer}>
+          <MoviePlayer uri={getVideoPath(movieInfo.key, season, episode)} />
+          {movieInfo.seasons && movieInfo.episodes ? (
+            <View style={styles.pickersContainer}>
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <Text style={{ marginRight: "5%" }}>Сезон</Text>
+                <RNPickerSelect
+                  items={movieInfo.seasons}
+                  selectedValue={season}
+                  placeholder={{}}
+                  style={pickerStyle}
+                  onValueChange={item => {
+                    onChange(item, episode);
+                  }}
+                />
+              </View>
+
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <Text style={{ marginRight: "5%" }}>Серия</Text>
+                <RNPickerSelect
+                  items={movieInfo.episodes}
+                  selectedValue={episode}
+                  placeholder={{}}
+                  style={pickerStyle}
+                  onValueChange={item => {
+                    onChange(season, item);
+                  }}
+                />
+              </View>
+            </View>
+          ) : (
+            <></>
+          )}
+        </Card>
+      ) : (
+        <></>
+      )}
     </View>
   );
 };
@@ -57,6 +123,16 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
     justifyContent: "center",
     padding: "5%",
+  },
+  videoPlayerContainer: {
+    marginVertical: "5%",
+    width: width * (9 / 10),
+  },
+  pickersContainer: {
+    marginVertical: "2%",
+    width: "100%",
+    flexDirection: "row",
+    justifyContent: "space-around",
   },
 });
 

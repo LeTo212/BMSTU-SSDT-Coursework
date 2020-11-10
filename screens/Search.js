@@ -75,51 +75,58 @@ const Search = ({ navigation }) => {
           bottom: 0,
         }}
       />
-      <View style={styles.searchContainer}>
-        <Searchbar
-          placeholder="Поиск"
-          onChangeText={query => {
-            onChangeSearch(query, type, genre);
-          }}
-          value={searchQuery}
-          style={styles.searchbar}
-        />
-        <View style={styles.dropDownPickersContainer}>
-          <View style={{ flexDirection: "row", alignItems: "center" }}>
-            <Text style={{ marginRight: "2%" }}>Тип</Text>
-            <DropDownPicker
-              items={list.types}
-              defaultValue={type}
-              containerStyle={{ height: 40, width: 100 }}
-              style={{ backgroundColor: "#fafafa" }}
-              itemStyle={{
-                justifyContent: "flex-start",
-              }}
-              dropDownStyle={{ backgroundColor: "#fafafa" }}
-              onChangeItem={item => {
-                onChangeSearch(searchQuery, item.value, genre);
-              }}
-            />
-          </View>
 
-          <View style={{ flexDirection: "row", alignItems: "center" }}>
-            <Text style={{ marginRight: "2%" }}>Жанр</Text>
-            <DropDownPicker
-              items={list.genres}
-              defaultValue={genre}
-              containerStyle={{ height: 40, width: 100 }}
-              style={{ backgroundColor: "#fafafa" }}
-              itemStyle={{
-                justifyContent: "flex-start",
-              }}
-              dropDownStyle={{ backgroundColor: "#fafafa" }}
-              onChangeItem={item => {
-                onChangeSearch(searchQuery, type, item.value);
-              }}
-            />
-          </View>
+      <Searchbar
+        placeholder="Поиск"
+        onChangeText={query => {
+          onChangeSearch(query, type, genre);
+        }}
+        value={searchQuery}
+        style={styles.searchbar}
+      />
+
+      <View
+        style={
+          Platform.OS === "android"
+            ? styles.dropDownPickersContainerAndroid
+            : styles.dropDownPickersContainerIOS
+        }
+      >
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
+          <Text style={{ marginRight: "2%" }}>Тип</Text>
+          <DropDownPicker
+            items={list.types}
+            defaultValue={type}
+            containerStyle={{ height: 40, width: 100 }}
+            style={{ backgroundColor: "#fafafa" }}
+            itemStyle={{
+              justifyContent: "flex-start",
+            }}
+            dropDownStyle={{ backgroundColor: "#fafafa" }}
+            onChangeItem={item => {
+              onChangeSearch(searchQuery, item.value, genre);
+            }}
+          />
+        </View>
+
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
+          <Text style={{ marginRight: "2%" }}>Жанр</Text>
+          <DropDownPicker
+            items={list.genres}
+            defaultValue={genre}
+            containerStyle={{ height: 40, width: 100 }}
+            style={{ backgroundColor: "#fafafa" }}
+            itemStyle={{
+              justifyContent: "flex-start",
+            }}
+            dropDownStyle={{ backgroundColor: "#fafafa" }}
+            onChangeItem={item => {
+              onChangeSearch(searchQuery, type, item.value);
+            }}
+          />
         </View>
       </View>
+
       <FlatList
         style={{ width: "100%", height: "100%" }}
         contentContainerStyle={{ alignItems: "center", paddingTop: "5%" }}
@@ -144,15 +151,24 @@ const styles = StyleSheet.create({
   },
   searchContainer: {
     width: "100%",
-    zIndex: 1,
+    zIndex: 100,
+    marginTop: "3%",
     flexDirection: "column",
   },
   searchbar: {
+    marginTop: "3%",
     marginHorizontal: "5%",
   },
-  dropDownPickersContainer: {
+  dropDownPickersContainerAndroid: {
     marginVertical: "2%",
     width: "100%",
+    flexDirection: "row",
+    justifyContent: "space-around",
+  },
+  dropDownPickersContainerIOS: {
+    marginVertical: "2%",
+    width: "100%",
+    zIndex: 100,
     flexDirection: "row",
     justifyContent: "space-around",
   },

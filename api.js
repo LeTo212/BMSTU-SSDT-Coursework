@@ -4,7 +4,7 @@ const getImagePath = (ID, Type) =>
 
 export const getVideoPath = (ID, Season, Episode) => {
   Season = Season ? `&Season=${Season}` : "";
-  Episode = Episode ? `&Season=${Episode}` : "";
+  Episode = Episode ? `&Episode=${Episode}` : "";
   return {
     uri: `${API_URL}/video?MovieID=${ID + Season + Episode}`,
   };
@@ -21,6 +21,14 @@ export const getTypesAndGenres = async () => {
   return info;
 };
 
+const getList = num => {
+  const list = [];
+  for (var i = 1; i <= num; i++) {
+    list.push({ label: i.toString(), value: i.toString() });
+  }
+  return list;
+};
+
 export const getMovies = async () => {
   const results = await fetch(API_URL + "/movies").then(x => x.json());
 
@@ -34,6 +42,8 @@ export const getMovies = async () => {
       Rating,
       Description,
       ReleaseDate,
+      Seasons,
+      Episodes,
     }) => ({
       key: String(MovieID),
       title: Title,
@@ -45,6 +55,8 @@ export const getMovies = async () => {
       releaseDate: ReleaseDate,
       poster: getImagePath(MovieID, "Poster"),
       backdrop: getImagePath(MovieID, "Backdrop"),
+      seasons: Seasons ? getList(Seasons) : null,
+      episodes: Episodes ? getList(Episodes) : null,
     })
   );
 
