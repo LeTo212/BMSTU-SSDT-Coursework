@@ -62,3 +62,22 @@ export const getMovies = async () => {
 
   return movies;
 };
+
+// Authentication
+
+export const checkUser = async (userName, password) => {
+  const requestOptions = {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email: userName, password: password }),
+  };
+
+  const result = await fetch(API_URL + "/signin", requestOptions)
+    .then(response => response.json())
+    .then(data => data.user)
+    .catch(e => {
+      throw e;
+    });
+
+  return result;
+};

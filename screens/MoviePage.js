@@ -57,8 +57,8 @@ const MoviePage = props => {
           }}
         />
       </View>
-      <Image source={{ uri: movie.poster }} style={styles.posterImage} />
-      <Card style={styles.titleContainer}>
+      <Card style={styles.posterContainer}>
+        <Image source={{ uri: movie.poster }} style={styles.posterImage} />
         <Text style={styles.title}>{movie.title}</Text>
       </Card>
       <Movie movieInfo={movie} />
@@ -72,18 +72,18 @@ const styles = StyleSheet.create({
     flexDirection: "column",
     backgroundColor: Colors.primary,
   },
-  posterImage: {
+  posterContainer: {
     width: 200,
+    alignItems: "center",
+    padding: "3%",
+    marginVertical: "5%",
+    borderRadius: 24,
+  },
+  posterImage: {
+    width: "100%",
     height: ITEM_SIZE,
     resizeMode: "cover",
     borderRadius: 24,
-    marginTop: "5%",
-  },
-  titleContainer: {
-    paddingHorizontal: "1%",
-    maxWidth: width * (9 / 10),
-    marginVertical: "5%",
-    borderRadius: 10,
   },
   title: {
     fontSize: 18,

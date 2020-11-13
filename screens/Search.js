@@ -82,7 +82,9 @@ const Search = ({ navigation }) => {
           onChangeSearch(query, type, genre);
         }}
         value={searchQuery}
-        style={styles.searchbar}
+        style={
+          Platform.OS === "ios" ? styles.searchbarIOS : styles.searchbarAndroid
+        }
       />
 
       <View
@@ -149,15 +151,20 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
   },
-  searchContainer: {
-    width: "100%",
-    zIndex: 100,
-    marginTop: "3%",
-    flexDirection: "column",
-  },
-  searchbar: {
+  searchbarAndroid: {
     marginTop: "3%",
     marginHorizontal: "5%",
+    shadowOpacity: 0.1,
+  },
+  searchbarIOS: {
+    marginTop: 0,
+    marginHorizontal: "5%",
+    borderColor: "rgba(158, 150, 150, 0.5)",
+    borderTopWidth: 1,
+    borderRightWidth: 1,
+    borderBottomWidth: 1,
+    borderLeftWidth: 1,
+    borderRadius: 3,
   },
   dropDownPickersContainerAndroid: {
     marginVertical: "2%",

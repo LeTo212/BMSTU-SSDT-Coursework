@@ -3,8 +3,11 @@ const fs = require("fs");
 const app = express();
 const mysql = require("mysql");
 const bodyParser = require("body-parser");
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 
 const DEFAULT_PATH = "/Users/dominyk/Desktop/Database";
+const userMiddleware = require("./middleware/users");
 
 app.use(bodyParser.json({ type: "application/json" }));
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -175,4 +178,104 @@ app.get("/types_genres", function (req, res) {
     }
     res.status(200).json(info);
   });
+});
+
+// Authentication
+
+app.post("/signin", (req, res, next) => {
+  connection.query(
+    `SELECT * FROM User WHERE Email = ${connection.escape(req.body.email)};`,
+    (err, result) => {
+      if (err) {
+        return res.status(400).send({
+          msg: err,
+        });
+      }
+      if (!result.length) {
+        return res.status(401).send({
+          msg: "Username or password is incorrect!",
+        });
+      }
+      bcrypt.compare(
+        req.body.password,
+        result[0]["Password"],
+        (bErr, bResult) => {
+          if (bErr) {
+            return res.status(401).send({
+              msg: "Username or password is incorrect!",
+            });
+          }
+          if (bResult) {
+            const token = jwt.sign(
+              {
+                email: result[0].Email,
+                userId: result[0].UserID,
+              },
+              "TMPKEY",
+              {
+                expiresIn: "7d",
+              }
+            );
+            delete result[0].Password;
+            return res.status(200).send({
+              msg: "Logged in!",
+              user: { token, ...result[0] },
+            });
+          }
+          return res.status(401).send({
+            msg: "Username or password is incorrect!",
+          });
+        }
+      );
+    }
+  );
+});
+
+app.post("/signup", userMiddleware.validateRegister, function (req, res, next) {
+  const email = req.body.email;
+  const firstname = req.body.firstname;
+  const middlename = req.body.middlename;
+  const surname = req.body.surname;
+  const password = req.body.password;
+
+  connection.query(
+    `SELECT * FROM User WHERE LOWER(Email) = LOWER(${connection.escape(
+      req.body.email
+    )});`,
+    (err, result) => {
+      if (result.length) {
+        return res.status(409).send({
+          msg: "This username is already in use!",
+        });
+      } else {
+        bcrypt.hash(password, 10, (err, hash) => {
+          if (err) {
+            return res.status(500).send({
+              msg: err,
+            });
+          } else {
+            connection.query(
+              `INSERT INTO User (Email, Firstname,${
+                middlename ? "Middlename," : ""
+              } Surname, Password) VALUES \
+              (${connection.escape(email)}, ${connection.escape(firstname)}, \
+              ${middlename ? connection.escape(middlename) + "," : ""} \
+              ${connection.escape(surname)}, \
+              ${connection.escape(hash)})`,
+              (err, result) => {
+                if (err) {
+                  return res.status(400).send({
+                    msg: err,
+                  });
+                }
+                return res.status(201).send({
+                  msg: "Registered!",
+                });
+              }
+            );
+          }
+        });
+      }
+    }
+  );
 });
