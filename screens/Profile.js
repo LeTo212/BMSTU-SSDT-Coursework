@@ -31,7 +31,11 @@ const Profile = () => {
         {user ? (
           <View style={styles.info}>
             <Text style={styles.text}>Имя: {user.firstname}</Text>
-            <Text style={styles.text}>Отчество: {user.middlename}</Text>
+            {user.middlename ? (
+              <Text style={styles.text}>Отчество: {user.middlename}</Text>
+            ) : (
+              <></>
+            )}
             <Text style={styles.text}>Фамилия: {user.surname}</Text>
             <Text style={styles.text}>Почта: {user.email}</Text>
           </View>

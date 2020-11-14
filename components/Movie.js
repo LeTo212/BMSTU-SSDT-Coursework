@@ -35,11 +35,6 @@ const Movie = ({ movieInfo }) => {
   const [season, setSeason] = useState("1");
   const [episode, setEpisode] = useState("1");
 
-  useEffect(() => {
-    setSeason(movieInfo.seasons ? season : null);
-    setEpisode(movieInfo.episodes ? episode : null);
-  });
-
   const onChange = (curSeason, curEpisode) => {
     setSeason(curSeason);
     setEpisode(curEpisode);
@@ -70,7 +65,13 @@ const Movie = ({ movieInfo }) => {
       </Card>
       {movieInfo.key ? (
         <Card style={styles.videoPlayerContainer}>
-          <MoviePlayer uri={getVideoPath(movieInfo.key, season, episode)} />
+          <MoviePlayer
+            uri={getVideoPath(
+              movieInfo.key,
+              movieInfo.seasons ? season : null,
+              movieInfo.episodes ? episode : null
+            )}
+          />
           {movieInfo.seasons && movieInfo.episodes ? (
             <View style={styles.pickersContainer}>
               <View style={{ flexDirection: "row", alignItems: "center" }}>

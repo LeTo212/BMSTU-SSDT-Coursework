@@ -74,10 +74,43 @@ export const checkUser = async (userName, password) => {
 
   const result = await fetch(API_URL + "/signin", requestOptions)
     .then(response => response.json())
-    .then(data => data.user)
     .catch(e => {
       throw e;
     });
 
   return result;
+};
+
+export const createUser = async (
+  userName,
+  firstname,
+  middlename,
+  surname,
+  password,
+  password_repeat
+) => {
+  const requestOptions = {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      email: userName,
+      firstname: firstname,
+      middlename: middlename,
+      surname: surname,
+      password: password,
+      password_repeat: password_repeat,
+    }),
+  };
+
+  const result = await fetch(API_URL + "/signup", requestOptions)
+    .then(response => {
+      const statusCode = response.status;
+      const data = response.json();
+      return Promise.all([{ statusCode: statusCode }, data]);
+    })
+    .catch(e => {
+      throw e;
+    });
+
+  return { ...result[0], ...result[1] };
 };

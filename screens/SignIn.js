@@ -8,6 +8,7 @@ import {
   StyleSheet,
   StatusBar,
   Alert,
+  KeyboardAvoidingView,
 } from "react-native";
 import * as Animatable from "react-native-animatable";
 import { LinearGradient } from "expo-linear-gradient";
@@ -90,29 +91,30 @@ const SignIn = ({ navigation }) => {
   };
 
   const loginHandle = async (userName, password) => {
-    const foundUser = await checkUser(userName, password);
-
-    if (data.username.length == 0 || data.password.length == 0) {
+    if (userName.length == 0 || password.length == 0) {
       Alert.alert(
-        "Wrong Input!",
-        "Username or password field cannot be empty.",
-        [{ text: "Okay" }]
+        "Неправильный ввод!",
+        "Почта или пароль не могут быть пустыми.",
+        [{ text: "Хорошо" }]
       );
       return;
     }
 
-    if (foundUser == null) {
-      Alert.alert("Invalid User!", "Username or password is incorrect.", [
-        { text: "Okay" },
-      ]);
+    const foundUser = await checkUser(userName, password);
+
+    if (foundUser.user == null) {
+      Alert.alert("Неправильный ввод!", foundUser.msg, [{ text: "Хорошо" }]);
       return;
     }
 
-    signIn(foundUser);
+    signIn(foundUser.user);
   };
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === "ios" ? "padding" : ""}
+    >
       <StatusBar backgroundColor={Colors.primary} barStyle="light-content" />
       <View style={styles.header}>
         <Text style={styles.text_header}>Добро пожаловать!</Text>
@@ -137,7 +139,7 @@ const SignIn = ({ navigation }) => {
           Почта
         </Text>
         <View style={styles.action}>
-          <FontAwesome name="user-o" color={colors.text} size={20} />
+          <FontAwesome name="envelope-o" color={colors.text} size={20} />
           <TextInput
             placeholder="Введите почту"
             placeholderTextColor="#666666"
@@ -260,7 +262,7 @@ const SignIn = ({ navigation }) => {
           </TouchableOpacity>
         </View>
       </Animatable.View>
-    </View>
+    </KeyboardAvoidingView>
   );
 };
 

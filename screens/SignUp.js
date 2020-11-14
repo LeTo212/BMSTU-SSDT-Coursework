@@ -8,50 +8,132 @@ import {
   StyleSheet,
   ScrollView,
   StatusBar,
+  Alert,
+  KeyboardAvoidingView,
 } from "react-native";
 import * as Animatable from "react-native-animatable";
 import { LinearGradient } from "expo-linear-gradient";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
 import Feather from "react-native-vector-icons/Feather";
 
+import { createUser } from "../api";
+import Colors from "../constants/colors";
+
 const SignUp = ({ navigation }) => {
   const [data, setData] = React.useState({
     username: "",
+    firstname: "",
+    middlename: "",
+    surname: "",
     password: "",
     confirm_password: "",
     check_textInputChange: false,
+    check_firstnameInputChange: false,
+    check_middlenameInputChange: false,
+    check_surnameInputChange: false,
     secureTextEntry: true,
     confirm_secureTextEntry: true,
+    isValidUser: true,
+    isValidPassword: true,
+    isValidConfirmPassword: true,
   });
 
   const textInputChange = val => {
-    if (val.length !== 0) {
+    if (val.trim().length >= 4) {
       setData({
         ...data,
         username: val,
         check_textInputChange: true,
+        isValidUser: true,
       });
     } else {
       setData({
         ...data,
         username: val,
         check_textInputChange: false,
+        isValidUser: false,
+      });
+    }
+  };
+
+  const handleFirstnameChange = val => {
+    if (val.length !== 0) {
+      setData({
+        ...data,
+        firstname: val,
+        check_firstnameInputChange: true,
+      });
+    } else {
+      setData({
+        ...data,
+        firstname: val,
+        check_firstnameInputChange: false,
+      });
+    }
+  };
+
+  const handleMiddlenameChange = val => {
+    if (val.length !== 0) {
+      setData({
+        ...data,
+        middlename: val,
+        check_middlenameInputChange: true,
+      });
+    } else {
+      setData({
+        ...data,
+        middlename: val,
+        check_middlenameInputChange: false,
+      });
+    }
+  };
+
+  const handleSurnameChange = val => {
+    if (val.length !== 0) {
+      setData({
+        ...data,
+        surname: val,
+        check_surnameInputChange: true,
+      });
+    } else {
+      setData({
+        ...data,
+        surname: val,
+        check_surnameInputChange: false,
       });
     }
   };
 
   const handlePasswordChange = val => {
-    setData({
-      ...data,
-      password: val,
-    });
+    if (val.trim().length >= 8) {
+      setData({
+        ...data,
+        password: val,
+        isValidPassword: true,
+      });
+    } else {
+      setData({
+        ...data,
+        password: val,
+        isValidPassword: false,
+      });
+    }
   };
 
   const handleConfirmPasswordChange = val => {
-    setData({
-      ...data,
-      confirm_password: val,
-    });
+    if (val.trim().length >= 8) {
+      setData({
+        ...data,
+        confirm_password: val,
+        isValidConfirmPassword: true,
+      });
+    } else {
+      setData({
+        ...data,
+        confirm_password: val,
+        isValidConfirmPassword: false,
+      });
+    }
   };
 
   const updateSecureTextEntry = () => {
@@ -68,24 +150,132 @@ const SignUp = ({ navigation }) => {
     });
   };
 
+  const handleValidUser = val => {
+    if (val.trim().length >= 4) {
+      setData({
+        ...data,
+        isValidUser: true,
+      });
+    } else {
+      setData({
+        ...data,
+        isValidUser: false,
+      });
+    }
+  };
+
+  const signupHandle = async (
+    userName,
+    firstname,
+    middlename,
+    surname,
+    password,
+    password_repeat
+  ) => {
+    if (
+      userName.length == 0 ||
+      firstname.length == 0 ||
+      surname.length == 0 ||
+      password.length == 0
+    ) {
+      Alert.alert(
+        "Неправильный ввод!",
+        "Поля ввода кроме отчества не могут быть пустыми.",
+        [{ text: "Хорошо" }]
+      );
+      return;
+    }
+
+    if (!data.isValidPassword || !data.isValidConfirmPassword) {
+      Alert.alert("Неправильный ввод!", "Пароли введены неправильно.", [
+        { text: "Хорошо" },
+      ]);
+    }
+
+    if (password !== password_repeat) {
+      Alert.alert("Неправильный ввод!", "Пароли не совпадают.", [
+        { text: "Хорошо" },
+      ]);
+    }
+
+    const user = await createUser(
+      userName,
+      firstname,
+      middlename,
+      surname,
+      password,
+      password_repeat
+    );
+
+    if (user.statusCode === 201) {
+      Alert.alert("Поздравляем!", "Вы успешно создали аккаунт!", [
+        { text: "Хорошо" },
+      ]);
+      navigation.goBack();
+    }
+
+    if (user.statusCode === 409) {
+      Alert.alert("Ошибка!", "Аккаунт с такой почтой уже существует.", [
+        { text: "Хорошо" },
+      ]);
+      return;
+    }
+  };
+
   return (
-    <View style={styles.container}>
-      <StatusBar backgroundColor="#009387" barStyle="light-content" />
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === "ios" ? "padding" : ""}
+    >
+      <StatusBar backgroundColor={Colors.primary} barStyle="light-content" />
       <View style={styles.header}>
-        <Text style={styles.text_header}>Register Now!</Text>
+        <Text style={styles.text_header}>Регистрация</Text>
       </View>
       <Animatable.View animation="fadeInUpBig" style={styles.footer}>
-        <ScrollView>
-          <Text style={styles.text_footer}>Username</Text>
+        <ScrollView showsVerticalScrollIndicator={false}>
+          <Text style={styles.text_footer}>Почта</Text>
           <View style={styles.action}>
-            <FontAwesome name="user-o" color="#05375a" size={20} />
+            <FontAwesome name="envelope-o" color="#05375a" size={20} />
             <TextInput
-              placeholder="Your Username"
+              placeholder="Введите почту"
               style={styles.textInput}
               autoCapitalize="none"
               onChangeText={val => textInputChange(val)}
+              onEndEditing={e => handleValidUser(e.nativeEvent.text)}
             />
             {data.check_textInputChange ? (
+              <Animatable.View animation="bounceIn">
+                <Feather name="check-circle" color="green" size={20} />
+              </Animatable.View>
+            ) : null}
+          </View>
+          {data.isValidUser ? null : (
+            <Animatable.View animation="fadeInLeft" duration={500}>
+              <Text style={styles.errorMsg}>
+                Почта должна быть не менее 4 символов.
+              </Text>
+            </Animatable.View>
+          )}
+
+          <Text
+            style={[
+              styles.text_footer,
+              {
+                marginTop: 35,
+              },
+            ]}
+          >
+            Имя
+          </Text>
+          <View style={styles.action}>
+            <FontAwesome name="user-o" color="#05375a" size={20} />
+            <TextInput
+              placeholder="Введите имя"
+              style={styles.textInput}
+              autoCapitalize="none"
+              onChangeText={val => handleFirstnameChange(val)}
+            />
+            {data.check_firstnameInputChange ? (
               <Animatable.View animation="bounceIn">
                 <Feather name="check-circle" color="green" size={20} />
               </Animatable.View>
@@ -100,12 +290,62 @@ const SignUp = ({ navigation }) => {
               },
             ]}
           >
-            Password
+            Отчество (Необязательно)
+          </Text>
+          <View style={styles.action}>
+            <FontAwesome name="user-o" color="#05375a" size={20} />
+            <TextInput
+              placeholder="Введите отчество"
+              style={styles.textInput}
+              autoCapitalize="none"
+              onChangeText={val => handleMiddlenameChange(val)}
+            />
+            {data.check_middlenameInputChange ? (
+              <Animatable.View animation="bounceIn">
+                <Feather name="check-circle" color="green" size={20} />
+              </Animatable.View>
+            ) : null}
+          </View>
+
+          <Text
+            style={[
+              styles.text_footer,
+              {
+                marginTop: 35,
+              },
+            ]}
+          >
+            Фамилия
+          </Text>
+          <View style={styles.action}>
+            <FontAwesome name="user-o" color="#05375a" size={20} />
+            <TextInput
+              placeholder="Введите фамилию"
+              style={styles.textInput}
+              autoCapitalize="none"
+              onChangeText={val => handleSurnameChange(val)}
+            />
+            {data.check_surnameInputChange ? (
+              <Animatable.View animation="bounceIn">
+                <Feather name="check-circle" color="green" size={20} />
+              </Animatable.View>
+            ) : null}
+          </View>
+
+          <Text
+            style={[
+              styles.text_footer,
+              {
+                marginTop: 35,
+              },
+            ]}
+          >
+            Пароль
           </Text>
           <View style={styles.action}>
             <Feather name="lock" color="#05375a" size={20} />
             <TextInput
-              placeholder="Your Password"
+              placeholder="Введите пароль"
               secureTextEntry={data.secureTextEntry ? true : false}
               style={styles.textInput}
               autoCapitalize="none"
@@ -119,6 +359,13 @@ const SignUp = ({ navigation }) => {
               )}
             </TouchableOpacity>
           </View>
+          {data.isValidPassword ? null : (
+            <Animatable.View animation="fadeInLeft" duration={500}>
+              <Text style={styles.errorMsg}>
+                Пароль должен быть не менее 8 символов
+              </Text>
+            </Animatable.View>
+          )}
 
           <Text
             style={[
@@ -128,43 +375,49 @@ const SignUp = ({ navigation }) => {
               },
             ]}
           >
-            Confirm Password
+            Подтверждение пароля
           </Text>
           <View style={styles.action}>
             <Feather name="lock" color="#05375a" size={20} />
             <TextInput
-              placeholder="Confirm Your Password"
+              placeholder="Повторите пароль"
               secureTextEntry={data.confirm_secureTextEntry ? true : false}
               style={styles.textInput}
               autoCapitalize="none"
               onChangeText={val => handleConfirmPasswordChange(val)}
             />
             <TouchableOpacity onPress={updateConfirmSecureTextEntry}>
-              {data.secureTextEntry ? (
+              {data.confirm_secureTextEntry ? (
                 <Feather name="eye-off" color="grey" size={20} />
               ) : (
                 <Feather name="eye" color="grey" size={20} />
               )}
             </TouchableOpacity>
           </View>
-          <View style={styles.textPrivate}>
-            <Text style={styles.color_textPrivate}>
-              By signing up you agree to our
-            </Text>
-            <Text style={[styles.color_textPrivate, { fontWeight: "bold" }]}>
-              {" "}
-              Terms of service
-            </Text>
-            <Text style={styles.color_textPrivate}> and</Text>
-            <Text style={[styles.color_textPrivate, { fontWeight: "bold" }]}>
-              {" "}
-              Privacy policy
-            </Text>
-          </View>
+          {data.isValidConfirmPassword ? null : (
+            <Animatable.View animation="fadeInLeft" duration={500}>
+              <Text style={styles.errorMsg}>
+                Пароль должен быть не менее 8 символов
+              </Text>
+            </Animatable.View>
+          )}
+
           <View style={styles.button}>
-            <TouchableOpacity style={styles.signIn} onPress={() => {}}>
+            <TouchableOpacity
+              style={styles.signIn}
+              onPress={() => {
+                signupHandle(
+                  data.username,
+                  data.firstname,
+                  data.middlename,
+                  data.surname,
+                  data.password,
+                  data.confirm_password
+                );
+              }}
+            >
               <LinearGradient
-                colors={["#08d4c4", "#01ab9d"]}
+                colors={[Colors.primary, Colors.secondary]}
                 style={styles.signIn}
               >
                 <Text
@@ -175,7 +428,7 @@ const SignUp = ({ navigation }) => {
                     },
                   ]}
                 >
-                  Sign Up
+                  Зарегистрироваться
                 </Text>
               </LinearGradient>
             </TouchableOpacity>
@@ -185,7 +438,7 @@ const SignUp = ({ navigation }) => {
               style={[
                 styles.signIn,
                 {
-                  borderColor: "#009387",
+                  borderColor: Colors.primary,
                   borderWidth: 1,
                   marginTop: 15,
                 },
@@ -195,17 +448,17 @@ const SignUp = ({ navigation }) => {
                 style={[
                   styles.textSign,
                   {
-                    color: "#009387",
+                    color: Colors.primary,
                   },
                 ]}
               >
-                Sign In
+                Войти
               </Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
       </Animatable.View>
-    </View>
+    </KeyboardAvoidingView>
   );
 };
 
@@ -214,7 +467,7 @@ export default SignUp;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#009387",
+    backgroundColor: Colors.primary,
   },
   header: {
     flex: 1,
@@ -274,5 +527,9 @@ const styles = StyleSheet.create({
   },
   color_textPrivate: {
     color: "grey",
+  },
+  errorMsg: {
+    color: "#FF0000",
+    fontSize: 14,
   },
 });
