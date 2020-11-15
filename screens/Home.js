@@ -8,10 +8,11 @@ import {
   Dimensions,
   Animated,
   Platform,
-  ScrollView,
+  TouchableOpacity,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 
+import { AuthContext } from "../constants/context";
 import { getMovies } from "../api";
 import CustomStatusBar from "../components/CustomStatusBar";
 import Loading from "../components/Loading";
@@ -80,7 +81,9 @@ const Backdrop = ({ movies, scrollX }) => {
   );
 };
 
-const Home = () => {
+const Home = ({ navigation }) => {
+  const [token, setToken] = useState();
+  const { getToken } = React.useContext(AuthContext);
   const [movies, setMovies] = useState([]);
   const [currentMovie, setCurrentMovie] = useState({});
   const viewConfigRef = useRef({
@@ -92,8 +95,16 @@ const Home = () => {
   const scrollX = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
+    getToken().then(data => {
+      setToken(data);
+    });
+
     const fetchData = async () => {
-      const movies = await getMovies();
+      const movies = await getMovies(token).then(result =>
+        result.filter(function (el) {
+          return el.rating >= 8.7;
+        })
+      );
       setMovies([{ key: "empty-left" }, ...movies, { key: "empty-right" }]);
       setCurrentMovie(movies[0]);
     };
@@ -101,7 +112,7 @@ const Home = () => {
     if (movies.length === 0) {
       fetchData(movies);
     }
-  }, [movies]);
+  }, [movies, token]);
 
   if (movies.length === 0) {
     return <Loading />;
@@ -113,12 +124,7 @@ const Home = () => {
         backgroundColor={Colors.secondary}
         barStyle="dark-content"
       />
-      <ScrollView
-        style={styles.screen}
-        horizontal={false}
-        showsVerticalScrollIndicator={false}
-        bounces={false}
-      >
+      <View style={styles.screen}>
         <Backdrop movies={movies} scrollX={scrollX} />
         <Animated.FlatList
           onViewableItemsChanged={onViewableItemsChanged.current}
@@ -157,28 +163,37 @@ const Home = () => {
 
             return (
               <View style={styles.moviesCarouselContainer}>
-                <Animated.View style={{ transform: [{ translateY }] }}>
-                  <Card style={styles.poster}>
-                    <Image
-                      source={{ uri: item.poster }}
-                      style={styles.posterImage}
-                    />
-                    <Text
-                      style={{ fontSize: item.title.length > 20 ? 20 : 24 }}
-                      numberOfLines={3}
-                    >
-                      {item.title}
-                    </Text>
-                    <Rating rating={item.rating} />
-                    <Genres genres={item.genres} />
-                  </Card>
-                </Animated.View>
+                <TouchableOpacity
+                  activeOpacity={0.4}
+                  onPress={() =>
+                    navigation.navigate("Movie", {
+                      token: token,
+                      movie: currentMovie,
+                    })
+                  }
+                >
+                  <Animated.View style={{ transform: [{ translateY }] }}>
+                    <Card style={styles.poster}>
+                      <Image
+                        source={{ uri: item.poster }}
+                        style={styles.posterImage}
+                      />
+                      <Text
+                        style={{ fontSize: item.title.length > 20 ? 20 : 24 }}
+                        numberOfLines={3}
+                      >
+                        {item.title}
+                      </Text>
+                      <Rating rating={item.rating} />
+                      <Genres genres={item.genres} />
+                    </Card>
+                  </Animated.View>
+                </TouchableOpacity>
               </View>
             );
           }}
         />
-        <Movie movieInfo={currentMovie} />
-      </ScrollView>
+      </View>
     </>
   );
 };

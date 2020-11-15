@@ -12,6 +12,7 @@ import DropDownPicker from "react-native-dropdown-picker";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 
+import { AuthContext } from "../constants/context";
 import { getMovies, getTypesAndGenres } from "../api";
 import Loading from "../components/Loading";
 import MovieListItem from "../components/MovieListItem";
@@ -20,6 +21,8 @@ import Colors from "../constants/colors";
 const { width, height } = Dimensions.get("window");
 
 const Search = ({ navigation }) => {
+  const [token, setToken] = useState();
+  const { getToken } = React.useContext(AuthContext);
   const [movies, setMovies] = useState([]);
   const [list, setList] = useState({});
   const [type, setType] = useState("");
@@ -28,8 +31,12 @@ const Search = ({ navigation }) => {
   const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
+    getToken().then(data => {
+      setToken(data);
+    });
+
     const fetchData = async () => {
-      const movies = await getMovies();
+      const movies = await getMovies(token);
       const list = await getTypesAndGenres();
 
       setMovies(movies);
@@ -37,12 +44,12 @@ const Search = ({ navigation }) => {
       setFilteredMovies(movies);
     };
 
-    if (movies.length === 0 || Object.keys(list).length === 0) {
+    if (movies == null || Object.keys(list).length === 0) {
       fetchData(movies, list);
     }
-  }, [movies, list]);
+  }, [movies, list, token]);
 
-  if (movies.length === 0 || Object.keys(list).length === 0) {
+  if (movies == null || Object.keys(list).length === 0) {
     return <Loading />;
   }
 
@@ -136,7 +143,9 @@ const Search = ({ navigation }) => {
         renderItem={movie => (
           <TouchableOpacity
             activeOpacity={0.4}
-            onPress={() => navigation.navigate("Movie", { movie: movie.item })}
+            onPress={() =>
+              navigation.navigate("Movie", { token: token, movie: movie.item })
+            }
           >
             <MovieListItem key={movie.key} movie={movie.item} />
           </TouchableOpacity>

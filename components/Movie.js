@@ -3,12 +3,10 @@ import { Text, StyleSheet, Dimensions, View } from "react-native";
 import RNPickerSelect from "react-native-picker-select";
 
 import Card from "../components/Card";
-import Genres from "../components/Genres";
 import { getVideoPath } from "../api";
 import MoviePlayer from "../components/MoviePlayer";
 
 const { width } = Dimensions.get("window");
-const TEXTMARGINVERTICAL = "2%";
 const pickerStyle = {
   inputIOS: {
     color: "black",
@@ -31,53 +29,63 @@ const pickerStyle = {
   },
 };
 
-const Movie = ({ movieInfo }) => {
+const Movie = ({ token, movieInfo }) => {
   const [season, setSeason] = useState("1");
   const [episode, setEpisode] = useState("1");
+  const [seasonsList, setSeasonsList] = useState([]);
+  const [episodesList, setEpisodesList] = useState([]);
+
+  const updateLists = curSeason => {
+    if (movieInfo.seasons) {
+      const result1 = [];
+      for (var i = 2; i < movieInfo.seasons.length; i++) {
+        result1.push({ label: i.toString(), value: i.toString() });
+      }
+      setSeasonsList(result1);
+
+      const result2 = [];
+      for (var i = 2; i <= movieInfo.seasons[curSeason]; i++) {
+        result2.push({
+          label: i.toString(),
+          value: i.toString(),
+        });
+      }
+      setEpisodesList(result2);
+    }
+  };
+
+  useEffect(() => {
+    updateLists(season);
+  }, [movieInfo]);
 
   const onChange = (curSeason, curEpisode) => {
-    setSeason(curSeason);
-    setEpisode(curEpisode);
+    if (curSeason != season) {
+      updateLists(curSeason);
+      setSeason(curSeason);
+      setEpisode("1");
+    } else {
+      setEpisode(curEpisode);
+    }
   };
 
   return (
-    <View style={styles.movieContainer}>
-      <Card style={styles.movieInfo}>
-        <Text style={{ marginVertical: TEXTMARGINVERTICAL }}>
-          Тип: {movieInfo.type}
-        </Text>
-        <Text style={{ marginVertical: TEXTMARGINVERTICAL }}>
-          Рейтинг: <Text style={{ color: "#ff6347" }}>{movieInfo.rating}</Text>
-        </Text>
-        <View style={{ flexDirection: "row" }}>
-          <Text style={{ marginVertical: TEXTMARGINVERTICAL }}>Жанры: </Text>
-          {movieInfo.genres ? <Genres genres={movieInfo.genres} /> : null}
-        </View>
-        <Text style={{ marginVertical: TEXTMARGINVERTICAL }}>
-          Режисер: {movieInfo.directors ? movieInfo.directors.join(", ") : null}
-        </Text>
-        <Text style={{ marginVertical: TEXTMARGINVERTICAL }}>
-          Выпуск: {movieInfo.releaseDate}
-        </Text>
-        <Text style={{ marginVertical: TEXTMARGINVERTICAL }}>
-          Описание: {movieInfo.description}
-        </Text>
-      </Card>
+    <>
       {movieInfo.key ? (
         <Card style={styles.videoPlayerContainer}>
           <MoviePlayer
             uri={getVideoPath(
+              token,
               movieInfo.key,
-              movieInfo.seasons ? season : null,
-              movieInfo.episodes ? episode : null
+              movieInfo.seasons.length !== 0 ? season : null,
+              movieInfo.seasons.length !== 0 ? episode : null
             )}
           />
-          {movieInfo.seasons && movieInfo.episodes ? (
+          {movieInfo.seasons.length !== 0 ? (
             <View style={styles.pickersContainer}>
               <View style={{ flexDirection: "row", alignItems: "center" }}>
                 <Text style={{ marginRight: "5%" }}>Сезон</Text>
                 <RNPickerSelect
-                  items={movieInfo.seasons}
+                  items={[{ label: "1", value: "1" }, ...seasonsList]}
                   selectedValue={season}
                   placeholder={{}}
                   style={pickerStyle}
@@ -90,7 +98,7 @@ const Movie = ({ movieInfo }) => {
               <View style={{ flexDirection: "row", alignItems: "center" }}>
                 <Text style={{ marginRight: "5%" }}>Серия</Text>
                 <RNPickerSelect
-                  items={movieInfo.episodes}
+                  items={[{ label: "1", value: "1" }, ...episodesList]}
                   selectedValue={episode}
                   placeholder={{}}
                   style={pickerStyle}
@@ -107,24 +115,11 @@ const Movie = ({ movieInfo }) => {
       ) : (
         <></>
       )}
-    </View>
+    </>
   );
 };
 
 const styles = StyleSheet.create({
-  movieContainer: {
-    flex: 1,
-    width: "100%",
-    position: "relative",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  movieInfo: {
-    width: width * (9 / 10),
-    alignItems: "flex-start",
-    justifyContent: "center",
-    padding: "5%",
-  },
   videoPlayerContainer: {
     marginVertical: "5%",
     width: width * (9 / 10),

@@ -17,7 +17,7 @@ import * as Font from "expo-font";
 
 //Screens
 import AuthNav from "./navigation/AuthNav";
-import Home from "./screens/Home";
+import HomeNav from "./navigation/HomeNav";
 import SearchNav from "./navigation/SearchNav";
 import Profile from "./screens/Profile";
 //
@@ -91,6 +91,16 @@ const App = () => {
 
   const authContext = React.useMemo(
     () => ({
+      getToken: async () => {
+        try {
+          const value = await AsyncStorage.getItem("userToken");
+          if (value !== null) {
+            return value;
+          }
+        } catch (e) {
+          console.log(e);
+        }
+      },
       getUser: async () => {
         try {
           const value = await AsyncStorage.getItem("userInfo");
@@ -177,7 +187,7 @@ const App = () => {
               >
                 <Tab.Screen
                   name="Home"
-                  component={Home}
+                  component={HomeNav}
                   options={{
                     tabBarLabel: "",
                     tabBarIcon: ({ color }) => (

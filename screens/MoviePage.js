@@ -10,14 +10,17 @@ import {
 import { LinearGradient } from "expo-linear-gradient";
 
 import Movie from "../components/Movie";
+import Genres from "../components/Genres";
 import Card from "../components/Card";
 import Colors from "../constants/colors";
 
 const { width, height } = Dimensions.get("window");
+const TEXTMARGINVERTICAL = "2%";
 const ITEM_SIZE = Platform.OS === "ios" ? width * 0.72 : width * 0.74;
 const BACKDROP_HEIGHT = height * 0.65;
 
 const MoviePage = props => {
+  const token = props.route.params.token;
   const movie = props.route.params.movie;
   return (
     <ScrollView
@@ -61,7 +64,32 @@ const MoviePage = props => {
         <Image source={{ uri: movie.poster }} style={styles.posterImage} />
         <Text style={styles.title}>{movie.title}</Text>
       </Card>
-      <Movie movieInfo={movie} />
+
+      <View style={styles.movieContainer}>
+        <Card style={styles.movieInfo}>
+          <Text style={{ marginVertical: TEXTMARGINVERTICAL }}>
+            Тип: {movie.type}
+          </Text>
+          <Text style={{ marginVertical: TEXTMARGINVERTICAL }}>
+            Рейтинг: <Text style={{ color: "#ff6347" }}>{movie.rating}</Text>
+          </Text>
+          <View style={{ flexDirection: "row" }}>
+            <Text style={{ marginVertical: TEXTMARGINVERTICAL }}>Жанры: </Text>
+            {movie.genres ? <Genres genres={movie.genres} /> : null}
+          </View>
+          <Text style={{ marginVertical: TEXTMARGINVERTICAL }}>
+            Режисер: {movie.directors ? movie.directors.join(", ") : null}
+          </Text>
+          <Text style={{ marginVertical: TEXTMARGINVERTICAL }}>
+            Выпуск: {movie.releaseDate}
+          </Text>
+          <Text style={{ marginVertical: TEXTMARGINVERTICAL }}>
+            Описание: {movie.description}
+          </Text>
+        </Card>
+
+        <Movie token={token} movieInfo={movie} />
+      </View>
     </ScrollView>
   );
 };
@@ -73,7 +101,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primary,
   },
   posterContainer: {
-    width: 200,
+    width: "60%",
     alignItems: "center",
     padding: "3%",
     marginVertical: "5%",
@@ -89,6 +117,19 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "700",
     marginVertical: "5%",
+  },
+  movieContainer: {
+    flex: 1,
+    width: "100%",
+    position: "relative",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  movieInfo: {
+    width: width * (9 / 10),
+    alignItems: "flex-start",
+    justifyContent: "center",
+    padding: "5%",
   },
 });
 

@@ -1,7 +1,8 @@
 import React, { useState } from "react";
-import { View, StyleSheet, Dimensions, Modal } from "react-native";
+import { View, StyleSheet, Dimensions, Modal, StatusBar } from "react-native";
 import { Video } from "expo-av";
 import VideoPlayer from "expo-video-player";
+import * as ScreenOrientation from "expo-screen-orientation";
 
 import Card from "../components/Card";
 
@@ -20,14 +21,22 @@ const MoviePlayer = props => {
         }}
         inFullscreen={fullscreen}
         switchToPortrait={() => {
+          ScreenOrientation.lockAsync(
+            ScreenOrientation.OrientationLock.PORTRAIT_UP
+          );
           setFullscreen(false);
         }}
         switchToLandscape={() => {
+          ScreenOrientation.lockAsync(
+            ScreenOrientation.OrientationLock.LANDSCAPE
+          );
           setFullscreen(true);
         }}
         showControlsOnLoad={true}
-        width={fullscreen ? height : styles.video.width}
-        height={fullscreen ? width : styles.video.height}
+        width={fullscreen ? styles.fullscreenVideo.width : styles.video.width}
+        height={
+          fullscreen ? styles.fullscreenVideo.height : styles.video.height
+        }
         videoBackground="#000"
       />
     );
@@ -41,9 +50,15 @@ const MoviePlayer = props => {
     );
   } else {
     return (
-      <Modal>
-        <View style={styles.fullscreenVideo}>{video()}</View>
-      </Modal>
+      <>
+        <StatusBar backgroundColor={"black"} />
+        <Modal
+          style={styles.fullscreenVideo}
+          supportedOrientations={["portrait", "landscape"]}
+        >
+          {video()}
+        </Modal>
+      </>
     );
   }
 };
@@ -63,11 +78,9 @@ const styles = StyleSheet.create({
     backgroundColor: "#000",
   },
   fullscreenVideo: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    transform: [{ rotate: "90deg" }],
-    backgroundColor: "black",
+    height: width,
+    width: height,
+    backgroundColor: "#000",
   },
 });
 

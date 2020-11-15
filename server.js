@@ -31,17 +31,17 @@ const server = app.listen(5556, "127.0.0.1", function () {
   console.log("Listening on port " + port);
 });
 
-app.get("/movies", function (req, res) {
+app.get("/movies", userMiddleware.isLoggedIn, function (req, res) {
   connection.query(
     "SET sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''));"
   );
   connection.query(
     "select m.MovieID, m.Title, t.Name as 'Type', group_concat(distinct g.Name separator ', ') as 'Genres', \
       group_concat(distinct Concat(d.Name,' ', Ifnull(d.MiddleName,' '), d.Surname) separator ', ') as 'Directors', \
-      m.Rating, m.Description, m.ReleaseDate, max(v.Season) as 'Seasons', max(v.Episode) as 'Episodes' \
-    from Movie m, Type t, Director_Movie d_m, Director d, Genre_Movie g_m, Genre g, Video v \
+      m.Rating, m.Description, m.ReleaseDate \
+    from Movie m, Type t, Director_Movie d_m, Director d, Genre_Movie g_m, Genre g \
     where m.TypeID = t.TypeID and d.DirectorID = d_m.DirectorID \
-      and m.MovieID = d_m.MovieID and g.GenreID = g_m.GenreID and m.MovieID = g_m.MovieID and v.MovieID = m.MovieID \
+      and m.MovieID = d_m.MovieID and g.GenreID = g_m.GenreID and m.MovieID = g_m.MovieID \
     group by m.MovieID;",
     function (error, rows, fields) {
       if (error) console.log(error);
@@ -50,14 +50,37 @@ app.get("/movies", function (req, res) {
           arr[index].Genres = arr[index].Genres.split(", ");
           arr[index].Directors = arr[index].Directors.split(", ");
         });
+        const movies = rows;
 
-        res.status(200).json(rows);
+        connection.query(
+          "select m.MovieID, v.Season as 'Season', max(v.Episode) as 'Episodes' \
+          from Movie m, Video v \
+          where m.MovieID = v.MovieID \
+          group by v.Season;",
+          function (error, rows, fields) {
+            if (error) console.log(error);
+            else {
+              movies.forEach(element => (element["Seasons"] = []));
+
+              rows.forEach(element => {
+                movies
+                  .filter(x => x.MovieID === element.MovieID)
+                  .map(x =>
+                    element.Season
+                      ? (x["Seasons"][element.Season] = element.Episodes)
+                      : null
+                  );
+              });
+              res.status(200).json(movies);
+            }
+          }
+        );
       }
     }
   );
 });
 
-app.get("/video", function (req, res) {
+app.get("/video", userMiddleware.isLoggedIn, function (req, res) {
   const MovieID = req.query.MovieID;
 
   if (MovieID != "undefined" && MovieID != "") {
