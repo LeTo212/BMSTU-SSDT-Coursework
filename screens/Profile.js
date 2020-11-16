@@ -1,20 +1,75 @@
 import React, { useState, useEffect } from "react";
-import { StyleSheet, Text, View, Image, TouchableOpacity } from "react-native";
+import {
+  StyleSheet,
+  Text,
+  View,
+  Image,
+  TouchableOpacity,
+  FlatList,
+  RefreshControl,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import Loading from "../components/Loading";
 
 import { AuthContext } from "../constants/context";
+import { getMovies, getFavorites } from "../api";
 import Card from "../components/Card";
+import MovieListItem from "../components/MovieListItem";
 
-const Profile = () => {
+const wait = timeout => {
+  return new Promise(resolve => {
+    setTimeout(resolve, timeout);
+  });
+};
+
+const Profile = ({ navigation }) => {
   const [user, setUser] = useState();
+  const [movies, setMovies] = useState([]);
+  const [userFavorites, setUserFavorites] = useState();
+  const [token, setToken] = useState();
+  const { getToken } = React.useContext(AuthContext);
   const { getUser, signOut } = React.useContext(AuthContext);
+  const [refreshing, setRefreshing] = React.useState(false);
+
+  const fetchData = async () => {
+    getUser().then(async data => {
+      setUser(data);
+      const favorites = await getFavorites(data.id, token);
+
+      setUserFavorites(favorites);
+    });
+  };
+
+  const onRefresh = React.useCallback(() => {
+    setRefreshing(true);
+    fetchData();
+    wait(2000).then(() => setRefreshing(false));
+  }, [userFavorites]);
 
   useEffect(() => {
-    getUser().then(data => {
-      setUser(data);
+    getToken().then(data => {
+      setToken(data);
     });
-  }, []);
+
+    const fetchMovies = async () => {
+      const movies = await getMovies(token);
+
+      setMovies(movies);
+    };
+
+    if (userFavorites == null || user == null) {
+      fetchData();
+    }
+
+    if (movies == null || token == null) {
+      fetchMovies(movies);
+    }
+  }, [movies, token]);
+
+  if (movies == null || token == null || user == null) {
+    return <Loading />;
+  }
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
@@ -56,13 +111,34 @@ const Profile = () => {
         </View>
       </Card>
 
-      <View style={{ margin: "5%", borderBottomWidth: 1 }}>
+      <View style={{ margin: "5%", borderBottomWidth: 1, marginBottom: 0 }}>
         <Text
           style={{ fontSize: 20, fontWeight: "800", paddingVertical: "1%" }}
         >
           Избранное
         </Text>
       </View>
+
+      <FlatList
+        style={{ width: "100%", height: "100%" }}
+        contentContainerStyle={{ alignItems: "center", paddingTop: "5%" }}
+        data={movies.filter(x =>
+          userFavorites ? userFavorites.find(el => el.MovieID == x.key) : null
+        )}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+        renderItem={movie => (
+          <TouchableOpacity
+            activeOpacity={0.4}
+            onPress={() =>
+              navigation.navigate("Movie", { token: token, movie: movie.item })
+            }
+          >
+            <MovieListItem key={movie.key} movie={movie.item} />
+          </TouchableOpacity>
+        )}
+      />
     </SafeAreaView>
   );
 };

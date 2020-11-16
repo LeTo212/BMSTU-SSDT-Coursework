@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   StyleSheet,
   ScrollView,
@@ -6,22 +6,58 @@ import {
   Dimensions,
   Text,
   View,
+  TouchableOpacity,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
+import { AntDesign } from "@expo/vector-icons";
 
 import Movie from "../components/Movie";
 import Genres from "../components/Genres";
 import Card from "../components/Card";
 import Colors from "../constants/colors";
+import { getFavorites, changeFavorite } from "../api";
+import { AuthContext } from "../constants/context";
+import Loading from "../components/Loading";
 
 const { width, height } = Dimensions.get("window");
 const TEXTMARGINVERTICAL = "2%";
 const ITEM_SIZE = Platform.OS === "ios" ? width * 0.72 : width * 0.74;
 const BACKDROP_HEIGHT = height * 0.65;
+const FAVORITE_COLOR = "#DC7633";
 
 const MoviePage = props => {
   const token = props.route.params.token;
   const movie = props.route.params.movie;
+  const [user, setUser] = useState();
+  const [isFavorite, setIsFavorite] = useState();
+  const { getUser } = React.useContext(AuthContext);
+
+  useEffect(() => {
+    const fetch = async () => {
+      getUser().then(async data => {
+        setUser(data);
+        const favorites = await getFavorites(data.id, token);
+
+        setIsFavorite(
+          favorites.find(x => x.MovieID == movie.key) ? true : false
+        );
+      });
+    };
+
+    if (user == null) {
+      fetch();
+    }
+  }, []);
+
+  if (isFavorite == null) {
+    return <Loading />;
+  }
+
+  const pressHandler = (movieID, userID, isValid) => {
+    setIsFavorite(isValid);
+    changeFavorite(movieID, userID, isValid, token);
+  };
+
   return (
     <ScrollView
       style={styles.screen}
@@ -67,6 +103,30 @@ const MoviePage = props => {
 
       <View style={styles.movieContainer}>
         <Card style={styles.movieInfo}>
+          <TouchableOpacity
+            onPress={() => pressHandler(movie.key, user.id, !isFavorite)}
+            style={[
+              styles.favorite,
+              isFavorite
+                ? { borderColor: FAVORITE_COLOR }
+                : { borderColor: "black" },
+            ]}
+          >
+            <AntDesign
+              name={isFavorite ? "heart" : "hearto"}
+              color={isFavorite ? FAVORITE_COLOR : "black"}
+              size={20}
+            />
+            <Text
+              style={[
+                styles.appButtonText,
+                isFavorite ? { color: FAVORITE_COLOR } : { color: "black" },
+              ]}
+            >
+              {isFavorite ? "Добавлено в избранное" : "Добавить в избранное"}
+            </Text>
+          </TouchableOpacity>
+
           <Text style={{ marginVertical: TEXTMARGINVERTICAL }}>
             Тип: {movie.type}
           </Text>
@@ -130,6 +190,25 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
     justifyContent: "center",
     padding: "5%",
+  },
+  favorite: {
+    flex: 1,
+    top: "3%",
+    right: "5%",
+    position: "absolute",
+    flexDirection: "row",
+    padding: 10,
+    alignItems: "center",
+    borderTopWidth: 1,
+    borderRightWidth: 1,
+    borderBottomWidth: 1,
+    borderLeftWidth: 1,
+    borderRadius: 10,
+  },
+  appButtonText: {
+    marginLeft: "2%",
+    fontSize: 15,
+    fontWeight: "400",
   },
 });
 

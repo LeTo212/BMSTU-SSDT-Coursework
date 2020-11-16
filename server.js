@@ -176,6 +176,66 @@ app.get("/image", function (req, res) {
   } else res.status(400).send("Invalid Type");
 });
 
+app.get("/favorites", userMiddleware.isLoggedIn, function (req, res) {
+  const UserID = req.query.UserID;
+  connection.query(
+    `select * from Favorite where UserID = ${UserID};`,
+    function (error, rows, fields) {
+      if (error) console.log(error);
+      else {
+        res.status(200).json(rows.filter(x => x.isValid == true));
+      }
+    }
+  );
+});
+
+app.post("/favorite", userMiddleware.isLoggedIn, function (req, res) {
+  const MovieID = req.query.MovieID;
+  const UserID = req.query.UserID;
+  const isValid = req.query.isValid;
+
+  connection.query(
+    `select * from Favorite where UserID = ${UserID} and MovieID = ${MovieID}`,
+    function (error, rows, fields) {
+      if (error) console.log(error);
+      else {
+        if (rows[0] == null) {
+          connection.query(
+            `INSERT INTO Favorite (MovieID, UserID, isValid) VALUES \
+              (${MovieID}, ${UserID}, ${isValid})`,
+            (err, result) => {
+              if (err) {
+                return res.status(400).send({
+                  msg: err,
+                });
+              }
+              return res.status(201).send({
+                msg: "OK",
+              });
+            }
+          );
+        } else {
+          connection.query(
+            `UPDATE Favorite
+            SET isValid = ${isValid}
+            WHERE MovieID = ${MovieID} and ${UserID}`,
+            (err, result) => {
+              if (err) {
+                return res.status(400).send({
+                  msg: err,
+                });
+              }
+              return res.status(201).send({
+                msg: "OK",
+              });
+            }
+          );
+        }
+      }
+    }
+  );
+});
+
 app.get("/types_genres", function (req, res) {
   let info = {};
 

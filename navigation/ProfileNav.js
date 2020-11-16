@@ -1,20 +1,20 @@
 import React from "react";
 import { createStackNavigator } from "@react-navigation/stack";
 
-import Home from "../screens/Home";
+import Profile from "../screens/Profile";
 import MoviePage from "../screens/MoviePage";
 import Colors from "../constants/colors";
 
 const Stack = createStackNavigator();
 
-export default function HomeNav() {
+export default function ProfileNav() {
   return (
     <Stack.Navigator>
       <Stack.Screen
-        name="Home"
-        component={Home}
+        name="Profile"
+        component={Profile}
         options={{
-          title: "Домашняя страница",
+          title: "Профиль",
           headerShown: false,
         }}
       />

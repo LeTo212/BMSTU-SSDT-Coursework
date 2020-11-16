@@ -19,7 +19,7 @@ import * as Font from "expo-font";
 import AuthNav from "./navigation/AuthNav";
 import HomeNav from "./navigation/HomeNav";
 import SearchNav from "./navigation/SearchNav";
-import Profile from "./screens/Profile";
+import ProfileNav from "./navigation/ProfileNav";
 //
 
 import { AuthContext } from "./constants/context";
@@ -215,7 +215,7 @@ const App = () => {
                 />
                 <Tab.Screen
                   name="Profile"
-                  component={Profile}
+                  component={ProfileNav}
                   options={{
                     tabBarLabel: "",
                     tabBarIcon: ({ color }) => (

@@ -106,7 +106,7 @@ const Search = ({ navigation }) => {
           <DropDownPicker
             items={list.types}
             defaultValue={type}
-            containerStyle={{ height: 40, width: 100 }}
+            containerStyle={{ height: 40, width: 110 }}
             style={{ backgroundColor: "#fafafa" }}
             itemStyle={{
               justifyContent: "flex-start",
@@ -123,7 +123,7 @@ const Search = ({ navigation }) => {
           <DropDownPicker
             items={list.genres}
             defaultValue={genre}
-            containerStyle={{ height: 40, width: 100 }}
+            containerStyle={{ height: 40, width: 110 }}
             style={{ backgroundColor: "#fafafa" }}
             itemStyle={{
               justifyContent: "flex-start",

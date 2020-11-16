@@ -72,6 +72,39 @@ export const getMovies = async token => {
   return;
 };
 
+export const getFavorites = async (userID, token) => {
+  if (token) {
+    const requestOptions = {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    };
+    return await fetch(
+      API_URL + `/favorites?UserID=${userID}`,
+      requestOptions
+    ).then(x => x.json());
+  }
+  return;
+};
+
+export const changeFavorite = async (movieID, userID, isValid, token) => {
+  const requestOptions = {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+  };
+  await fetch(
+    API_URL +
+      `/favorite?MovieID=${movieID}&UserID=${userID}&isValid=${isValid}`,
+    requestOptions
+  );
+  return;
+};
+
 // Authentication
 
 export const checkUser = async (userName, password) => {

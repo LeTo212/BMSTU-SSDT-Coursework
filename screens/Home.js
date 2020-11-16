@@ -20,7 +20,6 @@ import Genres from "../components/Genres";
 import Rating from "../components/Rating";
 import Colors from "../constants/colors";
 import Card from "../components/Card";
-import Movie from "../components/Movie";
 
 const { width, height } = Dimensions.get("window");
 const SPACING = 10;
@@ -109,12 +108,12 @@ const Home = ({ navigation }) => {
       setCurrentMovie(movies[0]);
     };
 
-    if (movies.length === 0) {
+    if (movies.length === 0 || token == null) {
       fetchData(movies);
     }
   }, [movies, token]);
 
-  if (movies.length === 0) {
+  if (movies.length === 0 || token == null) {
     return <Loading />;
   }
 
