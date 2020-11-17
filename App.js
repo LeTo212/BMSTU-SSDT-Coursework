@@ -11,15 +11,20 @@ import {
 } from "react-native-paper";
 import { createMaterialBottomTabNavigator } from "@react-navigation/material-bottom-tabs";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { AntDesign } from "@expo/vector-icons";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-community/async-storage";
 import * as Font from "expo-font";
+import { LogBox } from "react-native";
+LogBox.ignoreLogs(["Warning: ..."]);
+LogBox.ignoreAllLogs();
 
 //Screens
 import AuthNav from "./navigation/AuthNav";
 import HomeNav from "./navigation/HomeNav";
 import SearchNav from "./navigation/SearchNav";
 import ProfileNav from "./navigation/ProfileNav";
+import Help from "./screens/Help";
 //
 
 import { AuthContext } from "./constants/context";
@@ -205,11 +210,7 @@ const App = () => {
                   options={{
                     tabBarLabel: "",
                     tabBarIcon: ({ color }) => (
-                      <MaterialCommunityIcons
-                        name="search-web"
-                        color={color}
-                        size={28}
-                      />
+                      <AntDesign name="search1" color={color} size={28} />
                     ),
                   }}
                 />
@@ -221,6 +222,20 @@ const App = () => {
                     tabBarIcon: ({ color }) => (
                       <MaterialCommunityIcons
                         name="account"
+                        color={color}
+                        size={28}
+                      />
+                    ),
+                  }}
+                />
+                <Tab.Screen
+                  name="Help"
+                  component={Help}
+                  options={{
+                    tabBarLabel: "",
+                    tabBarIcon: ({ color }) => (
+                      <MaterialCommunityIcons
+                        name="question"
                         color={color}
                         size={28}
                       />

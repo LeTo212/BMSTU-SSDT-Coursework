@@ -143,7 +143,9 @@ const MoviePage = props => {
           <Text style={{ marginVertical: TEXTMARGINVERTICAL }}>
             Выпуск: {movie.releaseDate}
           </Text>
-          <Text style={{ marginVertical: TEXTMARGINVERTICAL }}>
+          <Text
+            style={{ marginVertical: TEXTMARGINVERTICAL, textAlign: "justify" }}
+          >
             Описание: {movie.description}
           </Text>
         </Card>
