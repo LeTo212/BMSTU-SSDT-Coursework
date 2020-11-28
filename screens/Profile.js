@@ -33,12 +33,8 @@ const Profile = ({ navigation }) => {
   const [refreshing, setRefreshing] = React.useState(false);
 
   const fetchData = async () => {
-    getUser().then(async data => {
-      setUser(data);
-      const favorites = await getFavorites(data.id, token);
-
-      setUserFavorites(favorites);
-    });
+    const favorites = await getFavorites(token);
+    if (favorites != null) setUserFavorites(favorites.data);
   };
 
   const onRefresh = React.useCallback(() => {
@@ -50,24 +46,35 @@ const Profile = ({ navigation }) => {
   useEffect(() => {
     getToken().then(data => {
       setToken(data);
+      fetchMovies();
+    });
+
+    getUser().then(data => {
+      setUser(data);
     });
 
     const fetchMovies = async () => {
       const movies = await getMovies(token);
+      if (movies != null) {
+        if (movies.statusCode === 401) {
+          signOut();
+          return;
+        }
 
-      setMovies(movies);
+        setMovies(movies.data);
+      }
     };
 
-    if (userFavorites == null || user == null) {
+    if (userFavorites == null) {
       fetchData();
     }
 
-    if (movies == null || token == null) {
+    if (movies.length === 0 || token == null) {
       fetchMovies(movies);
     }
   }, [movies, token]);
 
-  if (movies == null || token == null || user == null) {
+  if (movies.length === 0 || token == null || user == null) {
     return <Loading />;
   }
 

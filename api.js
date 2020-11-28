@@ -37,42 +37,47 @@ export const getMovies = async token => {
       },
     };
 
-    const results = await fetch(API_URL + "/movies", requestOptions).then(x =>
-      x.json()
-    );
+    const results = await fetch(API_URL + "/movies", requestOptions).then(x => {
+      const statusCode = x.status;
+      const data = x.json();
+      return Promise.all([{ statusCode: statusCode }, data]);
+    });
 
-    const movies = results.map(
-      ({
-        MovieID,
-        Title,
-        Type,
-        Genres,
-        Directors,
-        Rating,
-        Description,
-        ReleaseDate,
-        Seasons,
-      }) => ({
-        key: String(MovieID),
-        title: Title,
-        type: Type,
-        genres: Genres,
-        directors: Directors,
-        rating: Rating,
-        description: Description,
-        releaseDate: ReleaseDate,
-        poster: getImagePath(MovieID, "Poster"),
-        backdrop: getImagePath(MovieID, "Backdrop"),
-        seasons: Seasons,
-      })
-    );
+    const data =
+      results[0].statusCode === 200
+        ? results[1].map(
+            ({
+              MovieID,
+              Title,
+              Type,
+              Genres,
+              Directors,
+              Rating,
+              Description,
+              ReleaseDate,
+              Seasons,
+            }) => ({
+              key: String(MovieID),
+              title: Title,
+              type: Type,
+              genres: Genres,
+              directors: Directors,
+              rating: Rating,
+              description: Description,
+              releaseDate: ReleaseDate,
+              poster: getImagePath(MovieID, "Poster"),
+              backdrop: getImagePath(MovieID, "Backdrop"),
+              seasons: Seasons,
+            })
+          )
+        : null;
 
-    return movies;
+    return { ...results[0], data };
   }
   return;
 };
 
-export const getFavorites = async (userID, token) => {
+export const getFavorites = async token => {
   if (token) {
     const requestOptions = {
       method: "GET",
@@ -81,15 +86,19 @@ export const getFavorites = async (userID, token) => {
         "Content-Type": "application/json",
       },
     };
-    return await fetch(
-      API_URL + `/favorites?UserID=${userID}`,
-      requestOptions
-    ).then(x => x.json());
+    const results = await fetch(API_URL + `/favorites`, requestOptions).then(
+      x => {
+        const statusCode = x.status;
+        const data = x.json();
+        return Promise.all([{ statusCode: statusCode }, data]);
+      }
+    );
+    return { ...results[0], ...{ data: results[1] } };
   }
   return;
 };
 
-export const changeFavorite = async (movieID, userID, isValid, token) => {
+export const changeFavorite = async (movieID, isValid, token) => {
   const requestOptions = {
     method: "POST",
     headers: {
@@ -98,8 +107,7 @@ export const changeFavorite = async (movieID, userID, isValid, token) => {
     },
   };
   await fetch(
-    API_URL +
-      `/favorite?MovieID=${movieID}&UserID=${userID}&isValid=${isValid}`,
+    API_URL + `/favorite?MovieID=${movieID}&isValid=${isValid}`,
     requestOptions
   );
   return;

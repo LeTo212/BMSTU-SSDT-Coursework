@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   StyleSheet,
   FlatList,
@@ -11,6 +11,7 @@ import { Searchbar } from "react-native-paper";
 import DropDownPicker from "react-native-dropdown-picker";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
+import { debounce } from "lodash";
 
 import { AuthContext } from "../constants/context";
 import { getMovies, getTypesAndGenres } from "../api";
@@ -22,7 +23,7 @@ const { width, height } = Dimensions.get("window");
 
 const Search = ({ navigation }) => {
   const [token, setToken] = useState();
-  const { getToken } = React.useContext(AuthContext);
+  const { getToken, signOut } = React.useContext(AuthContext);
   const [movies, setMovies] = useState([]);
   const [list, setList] = useState({});
   const [type, setType] = useState("");
@@ -37,21 +38,34 @@ const Search = ({ navigation }) => {
 
     const fetchData = async () => {
       const movies = await getMovies(token);
-      const list = await getTypesAndGenres();
 
-      setMovies(movies);
-      setList(list);
-      setFilteredMovies(movies);
+      if (movies != null) {
+        if (movies.statusCode === 401) {
+          signOut();
+          return;
+        }
+
+        const list = await getTypesAndGenres();
+
+        setMovies(movies.data);
+        setList(list);
+        setFilteredMovies(movies.data);
+      }
     };
 
-    if (movies == null || Object.keys(list).length === 0) {
+    if (movies.length === 0 || Object.keys(list).length === 0) {
       fetchData(movies, list);
     }
   }, [movies, list, token]);
 
-  if (movies == null || Object.keys(list).length === 0) {
-    return <Loading />;
-  }
+  const handler = useCallback(
+    debounce(
+      (query, filterType, filterGenre) =>
+        onChangeSearch(query, filterType, filterGenre),
+      500
+    ),
+    [movies]
+  );
 
   const onChangeSearch = (query, filterType, filterGenre) => {
     if (query.length === 0 && filterType === "" && filterGenre === "") {
@@ -64,12 +78,14 @@ const Search = ({ navigation }) => {
           (filterGenre === "" ? true : movie.genres.includes(filterGenre))
         );
       });
+
       setFilteredMovies(list);
     }
-    setSearchQuery(query);
-    setType(filterType);
-    setGenre(filterGenre);
   };
+
+  if (movies.length === 0 || Object.keys(list).length === 0) {
+    return <Loading />;
+  }
 
   return (
     <SafeAreaView style={styles.screen}>
@@ -86,7 +102,8 @@ const Search = ({ navigation }) => {
       <Searchbar
         placeholder="Поиск"
         onChangeText={query => {
-          onChangeSearch(query, type, genre);
+          setSearchQuery(query);
+          handler(query, type, genre);
         }}
         value={searchQuery}
         style={
@@ -113,7 +130,8 @@ const Search = ({ navigation }) => {
             }}
             dropDownStyle={{ backgroundColor: "#fafafa" }}
             onChangeItem={item => {
-              onChangeSearch(searchQuery, item.value, genre);
+              setType(item.value);
+              handler(searchQuery, item.value, genre);
             }}
           />
         </View>
@@ -130,7 +148,8 @@ const Search = ({ navigation }) => {
             }}
             dropDownStyle={{ backgroundColor: "#fafafa" }}
             onChangeItem={item => {
-              onChangeSearch(searchQuery, type, item.value);
+              setGenre(item.value);
+              handler(searchQuery, type, item.value);
             }}
           />
         </View>

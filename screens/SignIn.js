@@ -57,13 +57,13 @@ const SignIn = ({ navigation }) => {
     if (val.trim().length >= 8) {
       setData({
         ...data,
-        password: val,
+        password: val.replace(/\s/g, ""),
         isValidPassword: true,
       });
     } else {
       setData({
         ...data,
-        password: val,
+        password: val.replace(/\s/g, ""),
         isValidPassword: false,
       });
     }
@@ -196,6 +196,7 @@ const SignIn = ({ navigation }) => {
             ]}
             autoCapitalize="none"
             onChangeText={val => handlePasswordChange(val)}
+            value={data.password}
           />
           <TouchableOpacity onPress={updateSecureTextEntry}>
             {data.secureTextEntry ? (

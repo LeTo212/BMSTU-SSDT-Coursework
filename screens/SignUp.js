@@ -108,13 +108,13 @@ const SignUp = ({ navigation }) => {
     if (val.trim().length >= 8) {
       setData({
         ...data,
-        password: val,
+        password: val.replace(/\s/g, ""),
         isValidPassword: true,
       });
     } else {
       setData({
         ...data,
-        password: val,
+        password: val.replace(/\s/g, ""),
         isValidPassword: false,
       });
     }
@@ -124,13 +124,13 @@ const SignUp = ({ navigation }) => {
     if (val.trim().length >= 8) {
       setData({
         ...data,
-        confirm_password: val,
+        confirm_password: val.replace(/\s/g, ""),
         isValidConfirmPassword: true,
       });
     } else {
       setData({
         ...data,
-        confirm_password: val,
+        confirm_password: val.replace(/\s/g, ""),
         isValidConfirmPassword: false,
       });
     }
@@ -350,6 +350,7 @@ const SignUp = ({ navigation }) => {
               style={styles.textInput}
               autoCapitalize="none"
               onChangeText={val => handlePasswordChange(val)}
+              value={data.password}
             />
             <TouchableOpacity onPress={updateSecureTextEntry}>
               {data.secureTextEntry ? (
@@ -385,6 +386,7 @@ const SignUp = ({ navigation }) => {
               style={styles.textInput}
               autoCapitalize="none"
               onChangeText={val => handleConfirmPasswordChange(val)}
+              value={data.confirm_password}
             />
             <TouchableOpacity onPress={updateConfirmSecureTextEntry}>
               {data.confirm_secureTextEntry ? (

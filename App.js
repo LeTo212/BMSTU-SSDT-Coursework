@@ -235,7 +235,7 @@ const App = () => {
                     tabBarLabel: "",
                     tabBarIcon: ({ color }) => (
                       <MaterialCommunityIcons
-                        name="question"
+                        name="help"
                         color={color}
                         size={28}
                       />

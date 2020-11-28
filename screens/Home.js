@@ -82,7 +82,7 @@ const Backdrop = ({ movies, scrollX }) => {
 
 const Home = ({ navigation }) => {
   const [token, setToken] = useState();
-  const { getToken } = React.useContext(AuthContext);
+  const { getToken, signOut } = React.useContext(AuthContext);
   const [movies, setMovies] = useState([]);
   const [currentMovie, setCurrentMovie] = useState({});
   const viewConfigRef = useRef({
@@ -99,13 +99,29 @@ const Home = ({ navigation }) => {
     });
 
     const fetchData = async () => {
-      const movies = await getMovies(token).then(result =>
-        result.filter(function (el) {
-          return el.rating >= 8.7;
-        })
-      );
-      setMovies([{ key: "empty-left" }, ...movies, { key: "empty-right" }]);
-      setCurrentMovie(movies[0]);
+      const movies = await getMovies(token).then(result => {
+        if (result != null) {
+          result.data.filter(function (el) {
+            return el.rating >= 8.7;
+          });
+
+          return result;
+        }
+      });
+
+      if (movies != null) {
+        if (movies.statusCode === 401) {
+          signOut();
+          return;
+        }
+
+        setMovies([
+          { key: "empty-left" },
+          ...movies.data,
+          { key: "empty-right" },
+        ]);
+        setCurrentMovie(movies[0]);
+      }
     };
 
     if (movies.length === 0 || token == null) {

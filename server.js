@@ -177,7 +177,7 @@ app.get("/image", function (req, res) {
 });
 
 app.get("/favorites", userMiddleware.isLoggedIn, function (req, res) {
-  const UserID = req.query.UserID;
+  const UserID = req.userData.userId;
   connection.query(
     `select * from Favorite where UserID = ${UserID};`,
     function (error, rows, fields) {
@@ -191,7 +191,7 @@ app.get("/favorites", userMiddleware.isLoggedIn, function (req, res) {
 
 app.post("/favorite", userMiddleware.isLoggedIn, function (req, res) {
   const MovieID = req.query.MovieID;
-  const UserID = req.query.UserID;
+  const UserID = req.userData.userId;
   const isValid = req.query.isValid;
 
   connection.query(
@@ -239,28 +239,26 @@ app.post("/favorite", userMiddleware.isLoggedIn, function (req, res) {
 app.get("/types_genres", function (req, res) {
   let info = {};
 
-  connection.query("select Name as 'Type' from Type;", function (
-    error,
-    rows,
-    fields
-  ) {
-    if (error) console.log(error);
-    else {
-      info.Types = Object.keys(rows).map(key => rows[key].Type);
+  connection.query(
+    "select Name as 'Type' from Type;",
+    function (error, rows, fields) {
+      if (error) console.log(error);
+      else {
+        info.Types = Object.keys(rows).map(key => rows[key].Type);
+      }
     }
-  });
+  );
 
-  connection.query("select Name as 'Genre' from Genre;", function (
-    error,
-    rows,
-    fields
-  ) {
-    if (error) console.log(error);
-    else {
-      info.Genres = Object.keys(rows).map(key => rows[key].Genre);
+  connection.query(
+    "select Name as 'Genre' from Genre;",
+    function (error, rows, fields) {
+      if (error) console.log(error);
+      else {
+        info.Genres = Object.keys(rows).map(key => rows[key].Genre);
+      }
+      res.status(200).json(info);
     }
-    res.status(200).json(info);
-  });
+  );
 });
 
 // Authentication
@@ -296,7 +294,7 @@ app.post("/signin", (req, res, next) => {
               },
               "TMPKEY",
               {
-                expiresIn: "7d",
+                expiresIn: "1d",
               }
             );
             delete result[0].Password;

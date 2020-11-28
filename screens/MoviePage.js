@@ -10,13 +10,13 @@ import {
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { AntDesign } from "@expo/vector-icons";
+import { AuthContext } from "../constants/context";
 
 import Movie from "../components/Movie";
 import Genres from "../components/Genres";
 import Card from "../components/Card";
 import Colors from "../constants/colors";
 import { getFavorites, changeFavorite } from "../api";
-import { AuthContext } from "../constants/context";
 import Loading from "../components/Loading";
 
 const { width, height } = Dimensions.get("window");
@@ -28,35 +28,36 @@ const FAVORITE_COLOR = "#DC7633";
 const MoviePage = props => {
   const token = props.route.params.token;
   const movie = props.route.params.movie;
-  const [user, setUser] = useState();
+  const { signOut } = React.useContext(AuthContext);
   const [isFavorite, setIsFavorite] = useState();
-  const { getUser } = React.useContext(AuthContext);
 
   useEffect(() => {
-    const fetch = async () => {
-      getUser().then(async data => {
-        setUser(data);
-        const favorites = await getFavorites(data.id, token);
+    const fetchData = async () => {
+      const favorites = await getFavorites(token);
 
-        setIsFavorite(
-          favorites.find(x => x.MovieID == movie.key) ? true : false
-        );
-      });
+      if (favorites.statusCode === 401) {
+        signOut();
+        return;
+      }
+
+      setIsFavorite(
+        favorites.data.find(x => x.MovieID == movie.key) ? true : false
+      );
     };
 
-    if (user == null) {
-      fetch();
+    if (isFavorite == null) {
+      fetchData();
     }
-  }, []);
+  }, [isFavorite]);
+
+  const pressHandler = (movieID, isValid) => {
+    setIsFavorite(isValid);
+    changeFavorite(movieID, isValid, token);
+  };
 
   if (isFavorite == null) {
     return <Loading />;
   }
-
-  const pressHandler = (movieID, userID, isValid) => {
-    setIsFavorite(isValid);
-    changeFavorite(movieID, userID, isValid, token);
-  };
 
   return (
     <ScrollView
@@ -104,7 +105,7 @@ const MoviePage = props => {
       <View style={styles.movieContainer}>
         <Card style={styles.movieInfo}>
           <TouchableOpacity
-            onPress={() => pressHandler(movie.key, user.id, !isFavorite)}
+            onPress={() => pressHandler(movie.key, !isFavorite)}
             style={[
               styles.favorite,
               isFavorite
