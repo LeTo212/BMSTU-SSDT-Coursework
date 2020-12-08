@@ -99,15 +99,7 @@ const Home = ({ navigation }) => {
     });
 
     const fetchData = async () => {
-      const movies = await getMovies(token).then(result => {
-        if (result != null) {
-          result.data.filter(function (el) {
-            return el.rating >= 8.7;
-          });
-
-          return result;
-        }
-      });
+      const movies = await getMovies(token);
 
       if (movies != null) {
         if (movies.statusCode === 401) {
@@ -115,12 +107,12 @@ const Home = ({ navigation }) => {
           return;
         }
 
-        setMovies([
-          { key: "empty-left" },
-          ...movies.data,
-          { key: "empty-right" },
-        ]);
-        setCurrentMovie(movies[0]);
+        const filtered = movies.data.filter(el => {
+          return parseFloat(el.rating) >= 8.7;
+        });
+
+        setMovies([{ key: "empty-left" }, ...filtered, { key: "empty-right" }]);
+        setCurrentMovie(filtered[0]);
       }
     };
 

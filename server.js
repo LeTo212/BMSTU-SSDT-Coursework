@@ -19,6 +19,7 @@ const connection = mysql.createConnection({
   password: "Dom12345",
   database: "Coursework",
 });
+module.exports = { app };
 
 connection.connect(function (error) {
   if (error) console.log(error);
